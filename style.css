@@ -1017,6 +1017,20 @@ textarea:focus-visible {
     overflow: hidden;
     transition: max-height var(--transition);
   }
+  .hero {
+    flex-direction: column;
+  }
+
+  .hero-image {
+    order: -1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .hero-text {
+    width: 100%;
+    text-align: center;
+  }
   .nav-links.open {
     max-height: 320px;
     padding: 1rem 0;

@@ -521,10 +521,9 @@ textarea:focus-visible {
 .profile-img {
   width: min(800px, 95%);
   height: auto;
-  max-height: 92vh;
   object-fit: contain;
   object-position: bottom;
-  margin-bottom: -2.5rem;
+  margin-top: 45px;
   filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.5));
   animation: float 6s ease-in-out infinite;
 }
@@ -1021,17 +1020,23 @@ textarea:focus-visible {
   }
   .hero {
     flex-direction: column;
+    padding-top: 25px;
+    gap: 5px;
   }
 
   .hero-image {
     order: -1;
-    width: 100%;
-    display: flex;
-    justify-content: center;
+    width: 72%;
+    max-width: 270px;
+    margin: 5px auto -5px;
+    height: auto;
+    display: block;
+    object-fit: contain;
   }
   .hero-text {
     width: 100%;
     text-align: center;
+    margin-top: 0
   }
   .nav-links.open {
     max-height: 320px;

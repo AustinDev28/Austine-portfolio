@@ -345,10 +345,8 @@ textarea:focus-visible {
 }
 
 .nav-logo {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 1.1rem;
-  color: var(--color-heading);
+  width: 92px;
+  height:auto
 }
 .nav-logo-bracket {
   color: var(--color-accent-light);

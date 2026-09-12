@@ -631,7 +631,7 @@ textarea:focus-visible {
 
 .project-image img {
   width: 100%;
-  height: auto;
+  height: 200px;
   transition: transform 0.4s ease;
 }
 

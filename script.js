@@ -1,240 +1,175 @@
-/* ==========================================================================
-   Moses Austin Portfolio — script.js
-   Organized into logical sections. Comments explain the "why", not just
-   the "what", so this is easy to follow for learning purposes.
-   ========================================================================== */
+/* ============================================================
+   Moses Austin — Portfolio script
+   ============================================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
+/* --- Contact form settings ---
+   Option A: paste a Formspree (or similar) endpoint to receive messages.
+   Option B: leave it empty and the form opens the visitor's email app instead. */
+// Lets the CSS hide .reveal elements only when JavaScript is running
+document.documentElement.classList.add("js");
 
-  /* ------------------------------------------------------------------
-     1. MOBILE NAVIGATION TOGGLE
-     ------------------------------------------------------------------ */
-  const hamburger = document.getElementById('hamburger');
-  const navLinks = document.getElementById('navLinks');
+const FORM_ENDPOINT = "";            // e.g. "https://formspree.io/f/xxxxxxx"
+const CONTACT_EMAIL = "kehindem495@gmail.com";
 
-  hamburger.addEventListener('click', () => {
-    const isOpen = navLinks.classList.toggle('open');
-    hamburger.classList.toggle('open', isOpen);
-    hamburger.setAttribute('aria-expanded', String(isOpen));
+document.addEventListener("DOMContentLoaded", () => {
+  const navbar    = document.getElementById("navbar");
+  const hamburger = document.getElementById("hamburger");
+  const navLinks  = document.getElementById("navLinks");
+  const links     = document.querySelectorAll(".nav-link");
+
+  /* ---------- Footer year ---------- */
+  const yearEl = document.getElementById("currentYear");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  /* ---------- Mobile menu ---------- */
+  const setMenu = (open) => {
+    navLinks.classList.toggle("open", open);
+    hamburger.classList.toggle("open", open);
+    hamburger.setAttribute("aria-expanded", String(open));
+  };
+
+  hamburger.addEventListener("click", () => {
+    setMenu(!navLinks.classList.contains("open"));
   });
 
-  // Close the mobile menu whenever a nav link is clicked
-  navLinks.querySelectorAll('.nav-link').forEach((link) => {
-    link.addEventListener('click', () => {
-      navLinks.classList.remove('open');
-      hamburger.classList.remove('open');
-      hamburger.setAttribute('aria-expanded', 'false');
-    });
+  // Close the menu after choosing a link, or pressing Escape
+  links.forEach((link) => link.addEventListener("click", () => setMenu(false)));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setMenu(false);
   });
 
-  /* ------------------------------------------------------------------
-     2. ACTIVE NAVIGATION HIGHLIGHTING WHILE SCROLLING
-     ------------------------------------------------------------------
-     We use IntersectionObserver on each <section> to know which one is
-     currently in the viewport, then mark the matching nav link active.
-  */
-  const sections = document.querySelectorAll('main section[id]');
-  const navLinkMap = new Map();
-  document.querySelectorAll('.nav-link').forEach((link) => {
-    navLinkMap.set(link.dataset.nav, link);
-  });
+  /* ---------- Navbar style once the page scrolls ---------- */
+  const onScroll = () => navbar.classList.toggle("scrolled", window.scrollY > 40);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
 
-  // Map real section ids to the nav-link data-nav key
-  const sectionToNavKey = (id) => (id === 'home-section' ? 'home' : id);
+  /* ---------- Highlight the nav link for the section in view ---------- */
+  const sectionIds = ["home", "about", "skills", "projects", "contact"];
+  const sections = sectionIds
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
 
-  const navObserver = new IntersectionObserver(
+  const spy = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const navKey = sectionToNavKey(entry.target.id);
-          const activeLink = navLinkMap.get(navKey);
-          if (activeLink) {
-            document.querySelectorAll('.nav-link').forEach((l) => l.classList.remove('active'));
-            activeLink.classList.add('active');
+        if (!entry.isIntersecting) return;
+        links.forEach((l) =>
+          l.classList.toggle("active", l.dataset.nav === entry.target.id)
+        );
+      });
+    },
+    { rootMargin: "-45% 0px -50% 0px" }   // fires when a section crosses mid-screen
+  );
+  sections.forEach((s) => spy.observe(s));
+
+  /* ---------- Reveal on scroll ---------- */
+  const revealEls = document.querySelectorAll(".reveal");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if ("IntersectionObserver" in window && !reduceMotion) {
+    const reveal = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            obs.unobserve(entry.target);
           }
-        }
-      });
-    },
-    { rootMargin: '-40% 0px -55% 0px', threshold: 0 } // Trigger around the middle of the viewport
-  );
+        });
+      },
+      { threshold: 0.12 }
+    );
+    revealEls.forEach((el) => reveal.observe(el));
+  } else {
+    revealEls.forEach((el) => el.classList.add("visible"));
+  }
 
-  sections.forEach((section) => navObserver.observe(section));
-
-  /* ------------------------------------------------------------------
-     3. SMOOTH SCROLLING
-     ------------------------------------------------------------------
-     CSS `scroll-behavior: smooth` already handles this for same-page
-     anchor links, so no extra JS is required. This section is kept as
-     a placeholder in case a smooth-scroll polyfill is ever needed for
-     older browsers.
-  */
-
-  /* ------------------------------------------------------------------
-     4. SCROLL-TO-TOP BUTTON
-     ------------------------------------------------------------------ */
-  const scrollTopBtn = document.getElementById('scrollTopBtn');
-
-  window.addEventListener('scroll', () => {
-    scrollTopBtn.classList.toggle('visible', window.scrollY > 500);
-  });
-
-  scrollTopBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-
-  /* ------------------------------------------------------------------
-     5. SCROLL REVEAL ANIMATIONS (Intersection Observer)
-     ------------------------------------------------------------------
-     Elements with the `.reveal` class start hidden (see CSS) and fade
-     / slide into place the first time they enter the viewport.
-  */
-  const revealEls = document.querySelectorAll('.reveal');
-
-  const revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          revealObserver.unobserve(entry.target); // Animate once, then stop watching
-        }
-      });
-    },
-    { threshold: 0.15 }
-  );
-
-  revealEls.forEach((el) => revealObserver.observe(el));
-
-  /* ------------------------------------------------------------------
-     6. ANIMATED PROGRESS BARS (Currently Learning section)
-     ------------------------------------------------------------------
-     Fill each bar to its target width only once it scrolls into view,
-     so the animation feels intentional rather than happening off-screen.
-  */
-  const progressBars = document.querySelectorAll('.progress-fill');
-
-  const progressObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const bar = entry.target;
-          const targetWidth = bar.dataset.progress;
-          bar.style.width = `${targetWidth}%`;
-          progressObserver.unobserve(bar);
-        }
-      });
-    },
-    { threshold: 0.4 }
-  );
-
-  progressBars.forEach((bar) => progressObserver.observe(bar));
-
-  /* ------------------------------------------------------------------
-     7. CONTACT FORM VALIDATION
-     ------------------------------------------------------------------
-     Simple, dependency-free validation. Real submission would need a
-     backend or a form service (e.g. Formspree) wired up to the `action`
-     attribute; here we simulate a successful send.
-  */
-  const contactForm = document.getElementById('contactForm');
-  const formStatus = document.getElementById('formStatus');
+  /* ---------- Contact form ---------- */
+  const form   = document.getElementById("contactForm");
+  const status = document.getElementById("formStatus");
 
   const fields = {
     name: {
-      input: document.getElementById('name'),
-      error: document.getElementById('nameError'),
-      validate: (value) => value.trim().length >= 2,
-      message: 'Please enter your name (at least 2 characters).',
+      el: document.getElementById("name"),
+      err: document.getElementById("nameError"),
+      check: (v) => (v.length < 2 ? "Enter your name." : ""),
     },
     email: {
-      input: document.getElementById('email'),
-      error: document.getElementById('emailError'),
-      validate: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()),
-      message: 'Please enter a valid email address.',
+      el: document.getElementById("email"),
+      err: document.getElementById("emailError"),
+      check: (v) =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "Enter a valid email address.",
     },
     subject: {
-      input: document.getElementById('subject'),
-      error: document.getElementById('subjectError'),
-      validate: (value) => value.trim().length >= 3,
-      message: 'Please enter a subject (at least 3 characters).',
+      el: document.getElementById("subject"),
+      err: document.getElementById("subjectError"),
+      check: (v) => (v.length < 3 ? "Enter a subject." : ""),
     },
     message: {
-      input: document.getElementById('message'),
-      error: document.getElementById('messageError'),
-      validate: (value) => value.trim().length >= 10,
-      message: 'Please write a message (at least 10 characters).',
+      el: document.getElementById("message"),
+      err: document.getElementById("messageError"),
+      check: (v) => (v.length < 10 ? "Write at least 10 characters." : ""),
     },
   };
 
-  function validateField(field) {
-    const value = field.input.value;
-    const isValid = field.validate(value);
-    field.error.textContent = isValid ? '' : field.message;
-    field.input.closest('.form-group').classList.toggle('invalid', !isValid);
-    return isValid;
-  }
+  const validateField = (f) => {
+    const msg = f.check(f.el.value.trim());
+    f.err.textContent = msg;
+    f.el.setAttribute("aria-invalid", msg ? "true" : "false");
+    return !msg;
+  };
 
-  // Validate as the user types/leaves a field, for immediate feedback
-  Object.values(fields).forEach((field) => {
-    field.input.addEventListener('blur', () => validateField(field));
-    field.input.addEventListener('input', () => {
-      if (field.input.closest('.form-group').classList.contains('invalid')) {
-        validateField(field);
-      }
+  Object.values(fields).forEach((f) => {
+    f.el.addEventListener("blur", () => validateField(f));
+    f.el.addEventListener("input", () => {
+      if (f.err.textContent) validateField(f);   // clear the error as they fix it
     });
   });
 
-  contactForm.addEventListener('submit', (event) => {
-    event.preventDefault();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    status.textContent = "";
 
-    const allValid = Object.values(fields)
-      .map((field) => validateField(field))
-      .every(Boolean);
-
-    if (!allValid) {
-      formStatus.textContent = 'Please fix the highlighted fields above.';
-      formStatus.className = 'form-status error';
+    const results = Object.values(fields).map(validateField);
+    if (results.includes(false)) {
+      const firstBad = Object.values(fields).find((f) => f.el.getAttribute("aria-invalid") === "true");
+      firstBad.el.focus();
       return;
     }
 
-    // Simulated send (no backend wired up in this template)
-    formStatus.textContent = 'Thanks! Your message has been sent.';
-    formStatus.className = 'form-status success';
-    contactForm.reset();
+    const data = {
+      name:    fields.name.el.value.trim(),
+      email:   fields.email.el.value.trim(),
+      subject: fields.subject.el.value.trim(),
+      message: fields.message.el.value.trim(),
+    };
+
+    // Option B: no endpoint set -> open the visitor's email app, pre-filled
+    if (!FORM_ENDPOINT) {
+      const body = `${data.message}\n\n— ${data.name} (${data.email})`;
+      window.location.href =
+        `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(data.subject)}&body=${encodeURIComponent(body)}`;
+      status.textContent = "Opening your email app to send the message.";
+      return;
+    }
+
+    // Option A: send to the form service
+    const button = form.querySelector("button[type='submit']");
+    button.disabled = true;
+    status.textContent = "Sending…";
+
+    try {
+      const res = await fetch(FORM_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      form.reset();
+      status.textContent = "Message sent. I'll reply soon.";
+    } catch (err) {
+      status.textContent = `Couldn't send the message. Email me directly at ${CONTACT_EMAIL}.`;
+    } finally {
+      button.disabled = false;
+    }
   });
-
-  /* ------------------------------------------------------------------
-     8. CURRENT YEAR IN FOOTER
-     ------------------------------------------------------------------ */
-  document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-  /* ------------------------------------------------------------------
-     9. DOWNLOAD CV FUNCTIONALITY
-     ------------------------------------------------------------------
-     The button already points to files/Moses_Austin_CV.pdf with a
-     `download` attribute, so the browser handles the download natively.
-     This listener just gives quick visual confirmation to the user.
-  */
-  const downloadCvBtn = document.getElementById('downloadCvBtn');
-  downloadCvBtn.addEventListener('click', () => {
-    downloadCvBtn.textContent = 'Downloading…';
-    setTimeout(() => {
-      downloadCvBtn.textContent = 'Download CV';
-    }, 1500);
-  });
-
-  /* ------------------------------------------------------------------
-     10. THEME-READY STRUCTURE (for future enhancements)
-     ------------------------------------------------------------------
-     Colors are defined as CSS custom properties in :root (see style.css).
-     To add a light/dark toggle later: create a `.theme-light` class with
-     overridden variables, then toggle it on <body> and persist the
-     choice (e.g. in localStorage) here.
-  */
-  const themeConfig = {
-    current: 'dark',
-    // Example of how a future toggle could hook in:
-    // setTheme(themeName) { document.body.className = `theme-${themeName}`; }
-  };
-  window.__themeConfig = themeConfig; // Exposed for future use, not required now
-
 });

@@ -138,8 +138,8 @@ p { margin: 0; }
 .about-text { color: var(--muted); font-size: clamp(1rem, .5vw + .9rem, 1.05rem); max-width: 60ch; }
 
 /* ---------- Skills ---------- */
-.skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr)); gap: 1rem; }
-.skill-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem 1rem; text-align: center; transition: transform .2s, border-color .2s; }
+.skills-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+.skill-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px; text-align: center; transition: transform .2s, border-color .2s; }
 .skill-card:hover { transform: translateY(-4px); border-color: var(--accent); }
 .skill-icon { display: grid; place-items: center; margin-bottom: .75rem; }
 .skill-name { font-size: 1rem; font-weight: 600; }
